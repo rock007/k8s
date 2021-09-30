@@ -1,0 +1,3 @@
+https://kubernetes.io/zh/docs/tasks/run-application/run-replicated-stateful-application/
+
+==not work

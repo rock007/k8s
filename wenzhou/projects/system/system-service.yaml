@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: system-service
+  name: system-service
+  namespace: wenzhou
+spec:
+  progressDeadlineSeconds: 60
+  replicas: 1
+  selector:
+    matchLabels:
+      app: system-service
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: system-service
+    spec:
+      containers:
+      - env:
+        - name: JAVA_TOOL_OPTIONS
+          value: ' -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 '
+        image: 127.0.0.1:8082/wenzhou-system-service:v1
+        imagePullPolicy: Always
+        name: system-service
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+        terminationMessagePath: /home/k8s-apps/logs
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+status: {}

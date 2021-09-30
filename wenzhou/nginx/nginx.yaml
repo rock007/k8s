@@ -1,0 +1,97 @@
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nginx-pv
+  namespace: wenzhou
+  labels:
+    pv: wenzhou-pv
+spec:
+  storageClassName: local-storage
+  capacity:
+    storage: 2Gi
+
+  claimRef:
+    apiVersion: v1
+    kind: PersistentVolumeClaim
+    name: nginx-pvc
+    namespace: wenzhou  
+  local:
+    path: /home/k8s_apps
+  persistentVolumeReclaimPolicy: Retain
+  accessModes:
+    - ReadWriteMany
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+              - izbp11mad55bef33ugftb5z
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nginx-pvc
+  namespace: wenzhou
+spec:
+  storageClassName: local-storage
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 500M
+  selector:
+   matchLabels:
+     pv: wenzhou-pv    
+  
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: wenzhou
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-web  
+
+  template:
+    metadata:
+      labels:
+        app: nginx-web
+        name: nginx-web
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:stable
+        ports:
+        - containerPort: 80
+        volumeMounts:
+          - name: nginx-vol
+            mountPath: /usr/share/nginx/html  
+            subPath: nginx_www
+      volumes:
+        - name: nginx-vol
+          persistentVolumeClaim:
+             claimName: nginx-pvc       
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service 
+  namespace: wenzhou
+spec:     
+  selector:     
+    app: nginx-web  
+  ports:
+  - name: nginx-port  
+    protocol: TCP     
+    port: 80          
+    nodePort: 30000   
+    targetPort: 80  
+  type: NodePort  
+ 

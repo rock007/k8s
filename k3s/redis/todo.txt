@@ -1,0 +1,27 @@
+kubectl create namespace redis-server
+
+kubectl apply -f pvc.yaml
+
+
+kubectl apply -f deployment.yaml
+
+==check 
+kubectl get pods -n redis-server
+
+
+kubectl apply -f service.yaml
+==check
+kubectl get svc -n redis-server
+
+
+
+==写入host转域名
+/etc/hosts
+I'm adding a new entry to every kubernetes node for Redis:
+
+
+echo '10.43.1.119 redis    redis.cube.local' >> /etc/hosts
+And off you go to every node via Ansible...
+
+==not test
+ansible cube -b -m copy -a "src=/etc/hosts dest=/etc/hosts"

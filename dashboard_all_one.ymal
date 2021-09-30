@@ -1,0 +1,48 @@
+
+##手动下载到本地
+#GITHUB_URL=https://github.com/kubernetes/dashboard/releases
+#VERSION_KUBE_DASHBOARD=$(curl -w '%{url_effective}' -I -L -s -S ${GITHUB_URL}/latest -o /dev/null | sed -e 's|.*/||')
+#sudo k3s kubectl create -f https://raw.githubusercontent.com/kubernetes/dashboard/${VERSION_KUBE_DASHBOARD}/aio/deploy/recommended.yaml
+
+
+##dashboard.admin-user.yml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-user
+  namespace: kubernetes-dashboard
+
+----
+##dashboard.admin-user-role.yml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-user
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: admin-user
+    namespace: kubernetes-dashboard
+
+
+#部署admin-user 配置
+#sudo k3s kubectl create -f dashboard.admin-user.yml -f dashboard.admin-user-role.yml
+
+#获得 Bearer Token
+sudo k3s kubectl -n kubernetes-dashboard describe secret admin-user-token | grep '^token'
+
+#本地访问仪表板
+sudo k3s kubectl proxy
+
+#http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
+#使用admin-user Bearer Token Sign In
+
+
+##最好通过转发，开放端口供外部访问
+##kubectl port-forward service/mongo 28015:27017
+
+##删除仪表板和 admin-user 配置
+sudo k3s kubectl delete ns kubernetes-dashboard

@@ -1,0 +1,16 @@
+ ==20210927 nginx ready
+
+wget http://nginx-service
+
+kubectl get svc
+
+ kubectl get all -n wenzhou
+
+
+kubectl exec -it $(kubectl get pod redis -n wenzhou|grep "ai-live-dev"|awk '{print $1}')    -n wenzhou --  tail -f /home/ailive-logs/gray/ailive_dao.2019-05-16.log
+
+kubectl describe svc redis-svc -n wenzhou　
+
+kubectl describe pod redis -n wenzhou
+
+kubectl exec -ti nginx-dp-5dfc689474-4bhfh /bin/bash -n wenzhou
